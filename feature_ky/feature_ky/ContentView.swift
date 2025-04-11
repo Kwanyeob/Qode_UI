@@ -20,5 +20,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView().previewDevice("iphone15")
+    ContentView()
 }

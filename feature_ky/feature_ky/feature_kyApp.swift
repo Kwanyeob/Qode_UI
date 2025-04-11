@@ -11,7 +11,8 @@ import SwiftUI
 struct feature_kyApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            Homeview()
+ 
         }
     }
 }
