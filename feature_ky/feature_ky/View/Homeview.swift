@@ -12,113 +12,175 @@ struct Homeview: View {
     @State private var home = HomemModel.preview()
     @State private var selectedTab = 0
     @State private var showAddUser = false
+    @State private var newUsername = ""
+    @State private var showUserNotFound = false
+    @State private var showInviteSent = false
+    
+    var totalUnreadStreaks: Int {
+        home.reduce(0) { $0 + $1.unreadStreaks }
+    }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Header - only visible on home tab
-            HeaderView()
-                .opacity(selectedTab == 0 ? 1 : 0)
-                .animation(.easeInOut, value: selectedTab)
-            
-            // Content based on selected tab
-            ZStack {
-                // Home View
-                VStack(spacing: 0) {
-                    // Add User Button
-                    HStack {
-                        Spacer()
-                        Button(action: {
-                            showAddUser = true
-                        }) {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.title2)
-                                .foregroundColor(.blue)
+        NavigationView {
+            VStack(spacing: 0) {
+                // Header - only visible on home tab
+                HeaderView(totalUnreadStreaks: totalUnreadStreaks)
+                    .opacity(selectedTab == 0 ? 1 : 0)
+                    .animation(.easeInOut, value: selectedTab)
+                
+                // Content based on selected tab
+                ZStack {
+                    // Home View
+                    VStack(spacing: 0) {
+                        // Add User Button
+                        HStack {
+                            Spacer()
+                            Button(action: {
+                                showAddUser = true
+                            }) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.blue)
+                            }
+                            .padding(.trailing)
                         }
-                        .padding(.horizontal)
-                        .padding(.vertical, 4)
+                        .padding(.vertical, 8)
+                        .background(Color(UIColor.systemGray6))
+                        .padding(.top, 12)
+                        
+                        // List in separate stack
+                        VStack {
+                            List(home) { home in
+                                HomeRow(home: home)
+                            }
+                            .listStyle(PlainListStyle())
+                        }
+                        .padding(.top, 8)  // Add spacing between button and list
+                        .background(Color(UIColor.systemGray6))
                     }
                     .background(Color(UIColor.systemGray6))
+                    .opacity(selectedTab == 0 ? 1 : 0)
                     
-                    List(home) { home in
-                        HomeRow(home: home)
-                    }
+                    // Quiz View
+                    QuizView()
+                        .opacity(selectedTab == 1 ? 1 : 0)
+                    
+                    // Discuss View
+                    DiscussView()
+                        .opacity(selectedTab == 2 ? 1 : 0)
+                    
+                    // Stats View
+                    StatsView()
+                        .opacity(selectedTab == 3 ? 1 : 0)
                 }
-                .opacity(selectedTab == 0 ? 1 : 0)
+                .animation(.easeInOut, value: selectedTab)
                 
-                // Quiz View
-                QuizView()
-                    .opacity(selectedTab == 1 ? 1 : 0)
-                
-                // Discuss View
-                DiscussView()
-                    .opacity(selectedTab == 2 ? 1 : 0)
-                
-                // Stats View
-                StatsView()
-                    .opacity(selectedTab == 3 ? 1 : 0)
-            }
-            .animation(.easeInOut, value: selectedTab)
-            
-            // Bottom Navigation Bar
-            VStack(spacing: 0) {
-                Divider()
-                    .background(Color.gray)
-                    .frame(height: 1)
-                
-                HStack(spacing: 0) {
-                    Spacer()
-                    Button(action: { selectedTab = 0 }) {
-                        VStack {
-                            Image(systemName: "house.fill")
-                                .foregroundColor(selectedTab == 0 ? .blue : .gray)
-                            Text("Home")
-                                .foregroundColor(selectedTab == 0 ? .blue : .gray)
-                        }
-                    }
-                    Spacer()
+                // Bottom Navigation Bar
+                VStack(spacing: 0) {
                     Divider()
-                        .frame(height: 30)
-                    Spacer()
-                    Button(action: { selectedTab = 1 }) {
-                        VStack {
-                            Image(systemName: "questionmark.circle.fill")
-                                .foregroundColor(selectedTab == 1 ? .blue : .gray)
-                            Text("Quiz")
-                                .foregroundColor(selectedTab == 1 ? .blue : .gray)
+                        .background(Color.gray)
+                        .frame(height: 1)
+                    
+                    HStack(spacing: 0) {
+                        Spacer()
+                        Button(action: { selectedTab = 0 }) {
+                            VStack {
+                                Image(systemName: "house.fill")
+                                    .foregroundColor(selectedTab == 0 ? .blue : .gray)
+                                Text("Home")
+                                    .foregroundColor(selectedTab == 0 ? .blue : .gray)
+                            }
                         }
-                    }
-                    Spacer()
-                    Divider()
-                        .frame(height: 30)
-                    Spacer()
-                    Button(action: { selectedTab = 2 }) {
-                        VStack {
-                            Image(systemName: "bubble.left.fill")
-                                .foregroundColor(selectedTab == 2 ? .blue : .gray)
-                            Text("Discuss")
-                                .foregroundColor(selectedTab == 2 ? .blue : .gray)
+                        Spacer()
+                        Divider()
+                            .frame(height: 30)
+                        Spacer()
+                        Button(action: { selectedTab = 1 }) {
+                            VStack {
+                                Image(systemName: "questionmark.circle.fill")
+                                    .foregroundColor(selectedTab == 1 ? .blue : .gray)
+                                Text("Quiz")
+                                    .foregroundColor(selectedTab == 1 ? .blue : .gray)
+                            }
                         }
-                    }
-                    Spacer()
-                    Divider()
-                        .frame(height: 30)
-                    Spacer()
-                    Button(action: { selectedTab = 3 }) {
-                        VStack {
-                            Image(systemName: "chart.bar.fill")
-                                .foregroundColor(selectedTab == 3 ? .blue : .gray)
-                            Text("My Stats")
-                                .foregroundColor(selectedTab == 3 ? .blue : .gray)
+                        Spacer()
+                        Divider()
+                            .frame(height: 30)
+                        Spacer()
+                        Button(action: { selectedTab = 2 }) {
+                            VStack {
+                                Image(systemName: "bubble.left.fill")
+                                    .foregroundColor(selectedTab == 2 ? .blue : .gray)
+                                Text("Discuss")
+                                    .foregroundColor(selectedTab == 2 ? .blue : .gray)
+                            }
                         }
+                        Spacer()
+                        Divider()
+                            .frame(height: 30)
+                        Spacer()
+                        Button(action: { selectedTab = 3 }) {
+                            VStack {
+                                Image(systemName: "chart.bar.fill")
+                                    .foregroundColor(selectedTab == 3 ? .blue : .gray)
+                                Text("My Stats")
+                                    .foregroundColor(selectedTab == 3 ? .blue : .gray)
+                            }
+                        }
+                        Spacer()
                     }
-                    Spacer()
+                    .padding(.vertical, 8)
+                    .background(Color(UIColor.systemGray6))
                 }
-                .padding(.vertical, 8)
-                .background(Color(UIColor.systemGray6))
             }
-        }
-        .sheet(isPresented: $showAddUser) {
-            AddUserView(isPresented: $showAddUser)
+            .sheet(isPresented: $showAddUser) {
+                NavigationView {
+                    VStack(spacing: 20) {
+                        TextField("Enter username", text: $newUsername)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .padding()
+                        
+                        Button(action: {
+                            // Here you would typically check if the user exists
+                            // For now, we'll simulate the check
+                            if newUsername.isEmpty {
+                                return
+                            }
+                            
+                            // Simulate user check - replace with actual API call
+                            if newUsername == "existinguser" {
+                                showInviteSent = true
+                            } else {
+                                showUserNotFound = true
+                            }
+                            showAddUser = false
+                        }) {
+                            Text("Add")
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.blue)
+                                .cornerRadius(10)
+                        }
+                        .padding(.horizontal)
+                        .disabled(newUsername.isEmpty)
+                        
+                        Spacer()
+                    }
+                    .navigationTitle("Add User")
+                    .navigationBarItems(trailing: Button("Cancel") {
+                        showAddUser = false
+                    })
+                }
+            }
+            .alert("Invite Sent", isPresented: $showInviteSent) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("An invite has been sent to \(newUsername)")
+            }
+            .sheet(isPresented: $showUserNotFound) {
+                UserNotFoundView(isPresented: $showUserNotFound, username: newUsername)
+            }
         }
     }
 }
@@ -126,6 +188,7 @@ struct Homeview: View {
 struct HomeRow: View {
     let home: HomemModel
     @State private var showUserDetail = false
+    @State private var showStatsPopover = false
     
     var body: some View {
         HStack {
@@ -138,17 +201,29 @@ struct HomeRow: View {
             }
             
             Button(action: {
-                showUserDetail = true
+                showStatsPopover = true
             }) {
                 Text(home.name)
                     .font(.body)
                     .foregroundColor(.primary)
             }
+            .popover(isPresented: $showStatsPopover) {
+                UserStatsPopover(userName: home.name, isPresented: $showStatsPopover)
+            }
             
             Spacer()
             
-            Image(systemName: "paperplane.fill")
-                .foregroundColor(.blue)
+            ZStack(alignment: .topTrailing) {
+                Image(systemName: "paperplane.fill")
+                    .foregroundColor(.blue)
+                
+                if home.unreadStreaks > 0 {
+                    Circle()
+                        .fill(Color.red)
+                        .frame(width: 8, height: 8)
+                        .offset(x: 4, y: -4)
+                }
+            }
         }
         .padding(.vertical, 8)
         .sheet(isPresented: $showUserDetail) {
@@ -159,6 +234,7 @@ struct HomeRow: View {
 
 struct HeaderView: View {
     @State private var showProfilePopup = false
+    let totalUnreadStreaks: Int
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -166,7 +242,7 @@ struct HeaderView: View {
                 Button(action: {
                     showProfilePopup = true
                 }) {
-                    Text("John Doe")
+                    Text("Hello Kwanyeob")
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
@@ -174,9 +250,11 @@ struct HeaderView: View {
                 
                 Spacer()
                 
-                Text("You have 3 new streaks waiting 🔥")
-                    .font(.subheadline)
-                    .foregroundColor(.orange)
+                if totalUnreadStreaks > 0 {
+                    Text("\(totalUnreadStreaks) new streaks waiting 🔥")
+                        .font(.subheadline)
+                        .foregroundColor(.orange)
+                }
             }
         }
         .padding()
@@ -222,23 +300,6 @@ struct ProfilePopupView: View {
             .cornerRadius(12)
             .shadow(radius: 10)
             .padding()
-        }
-    }
-}
-
-struct AddUserView: View {
-    @Binding var isPresented: Bool
-    
-    var body: some View {
-        NavigationView {
-            VStack {
-                Text("Add User Form")
-                    .font(.title)
-                // Add your form content here
-            }
-            .navigationBarItems(trailing: Button("Done") {
-                isPresented = false
-            })
         }
     }
 }
