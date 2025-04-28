@@ -22,7 +22,7 @@ struct Homeview: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
+            VStack(spacing: 0) {ㅈ
                 // Header - only visible on home tab
                 HeaderView(totalUnreadStreaks: totalUnreadStreaks)
                     .opacity(selectedTab == 0 ? 1 : 0)
