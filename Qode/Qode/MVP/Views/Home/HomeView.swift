@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-
 struct HomeView: View {
     @State private var home = HomeModel.preview()
     @State private var selectedTab = 0
@@ -32,18 +31,28 @@ struct HomeView: View {
                 ZStack {
                     // Home View
                     VStack(spacing: 0) {
-                        // Add User Button
                         HStack {
-                            Spacer()
-                            Button(action: {
-                                showAddUser = true
-                            }) {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.title2)
-                                    .foregroundColor(.blue)
-                            }
-                            .padding(.trailing)
+                            Image(systemName: "magnifyingglass")
+                                .foregroundColor(.gray)
+                                .padding(.leading, 8)
+                            TextField("Search or add user by username", text: $newUsername, onCommit: {
+                                if !newUsername.isEmpty {
+                                    // Simulate user check - replace with actual API call
+                                    if newUsername == "existinguser" {
+                                        showInviteSent = true
+                                    } else {
+                                        showUserNotFound = true
+                                    }
+                                    newUsername = ""
+                                }
+                            })
+                            .textFieldStyle(PlainTextFieldStyle())
+                            .padding(.vertical, 10)
+                            .padding(.trailing, 8)
                         }
+                        .background(Color.white)
+                        .cornerRadius(10)
+                        .padding(.horizontal)
                         .padding(.vertical, 8)
                         .background(Color(UIColor.systemGray6))
                         .padding(.top, 12)
@@ -157,13 +166,19 @@ struct HomeRow: View {
             
             ZStack(alignment: .topTrailing) {
                 Image(systemName: "paperplane.fill")
-                    .foregroundColor(.blue)
+                    .foregroundColor(home.hasReplied ? .gray : .blue)
                 
                 if home.unreadStreaks > 0 {
-                    Circle()
-                        .fill(Color.red)
-                        .frame(width: 8, height: 8)
-                        .offset(x: 4, y: -4)
+                    ZStack {
+                        Circle()
+                            .fill(Color.red)
+                            .frame(width: 22, height: 22)
+                        Text("\(home.unreadStreaks)")
+                            .foregroundColor(.white)
+                            .font(.caption2)
+                            .fontWeight(.bold)
+                    }
+                    .offset(x: 8, y: -8)
                 }
             }
         }
