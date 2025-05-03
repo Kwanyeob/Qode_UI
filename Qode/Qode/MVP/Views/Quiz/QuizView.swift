@@ -42,30 +42,41 @@ struct QuizView: View {
     @State private var questions: [QuizQuestion] = []
     @State private var userAnswers: [Int: Any] = [:]
     @State private var showResults = false
+    @State private var showShareStreak = false
+    @State private var navigateToShareStreak = false
     
     var body: some View {
-        ZStack {
-            switch quizState {
-            case .start:
-                StartView(startQuiz: startQuiz)
-            case .question:
-                if showResults {
-                    ResultsView(
-                        questions: questions,
-                        userAnswers: userAnswers,
-                        restartQuiz: restartQuiz
-                    )
-                } else {
-                    QuestionView(
-                        question: questions[currentQuestionIndex],
-                        selectedAnswers: $selectedAnswers,
-                        fillInBlankAnswer: $fillInBlankAnswer,
-                        onNext: nextQuestion,
-                        onBack: previousQuestion,
-                        onSubmit: submitQuiz,
-                        isLastQuestion: currentQuestionIndex == questions.count - 1
-                    )
+        NavigationView {
+            ZStack {
+                switch quizState {
+                case .start:
+                    StartView(startQuiz: startQuiz)
+                case .question:
+                    if showResults {
+                        ResultsView(
+                            questions: questions,
+                            userAnswers: userAnswers,
+                            onShare: { navigateToShareStreak = true }
+                        )
+                    } else {
+                        QuestionView(
+                            question: questions[currentQuestionIndex],
+                            selectedAnswers: $selectedAnswers,
+                            fillInBlankAnswer: $fillInBlankAnswer,
+                            onNext: nextQuestion,
+                            onBack: previousQuestion,
+                            onSubmit: submitQuiz,
+                            isLastQuestion: currentQuestionIndex == questions.count - 1
+                        )
+                    }
                 }
+                NavigationLink(
+                    destination: ShareStreakSheet(),
+                    isActive: $navigateToShareStreak
+                ) {
+                    EmptyView()
+                }
+                .hidden()
             }
         }
         .onAppear {
@@ -284,67 +295,75 @@ struct QuestionView: View {
     let isLastQuestion: Bool
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Text(question.question)
-                .font(.title2)
-                .padding()
-            
-            Spacer()
-            
-            switch question.type {
-            case .multipleChoice:
-                MultipleChoiceView(
-                    options: question.options ?? [],
-                    selectedAnswers: $selectedAnswers
-                )
-            case .trueFalse:
-                TrueFalseView(selectedAnswers: $selectedAnswers)
-            case .fillInBlank:
-                FillInBlankView(answer: $fillInBlankAnswer)
-            }
-            
-            Spacer()
-            
-            HStack {
-                Button(action: onBack) {
-                    HStack {
-                        Image(systemName: "arrow.left")
-                        Text("Back")
+        GeometryReader { geometry in
+            VStack {
+                // Centered content
+                VStack(spacing: 16) {
+                    Text(question.question)
+                        .font(.title2)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.top, 24)
+                        .padding(.bottom, 8)
+
+                    switch question.type {
+                    case .multipleChoice:
+                        MultipleChoiceView(
+                            options: question.options ?? [],
+                            selectedAnswers: $selectedAnswers
+                        )
+                    case .trueFalse:
+                        TrueFalseView(selectedAnswers: $selectedAnswers)
+                    case .fillInBlank:
+                        FillInBlankView(answer: $fillInBlankAnswer)
                     }
-                    .foregroundColor(.blue)
                 }
-                
-                Spacer()
-                
-                if isLastQuestion {
-                    Button(action: onSubmit) {
+                .frame(maxHeight: .infinity, alignment: .center)
+
+                // Navigation buttons at the bottom
+                HStack {
+                    Button(action: onBack) {
                         HStack {
-                            Text("Submit")
-                            Image(systemName: "checkmark.circle.fill")
+                            Image(systemName: "arrow.left")
+                            Text("Back")
                         }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 10)
-                        .background(isNextEnabled ? Color.green : Color.gray)
-                        .cornerRadius(10)
+                        .foregroundColor(.blue)
                     }
-                    .disabled(!isNextEnabled)
-                } else {
-                    Button(action: onNext) {
-                        HStack {
-                            Text("Next")
-                            Image(systemName: "arrow.right")
+
+                    Spacer()
+
+                    if isLastQuestion {
+                        Button(action: onSubmit) {
+                            HStack {
+                                Text("Submit")
+                                Image(systemName: "checkmark.circle.fill")
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(isNextEnabled ? Color.green : Color.gray)
+                            .cornerRadius(10)
                         }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 10)
-                        .background(isNextEnabled ? Color.blue : Color.gray)
-                        .cornerRadius(10)
+                        .disabled(!isNextEnabled)
+                    } else {
+                        Button(action: onNext) {
+                            HStack {
+                                Text("Next")
+                                Image(systemName: "arrow.right")
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(isNextEnabled ? Color.blue : Color.gray)
+                            .cornerRadius(10)
+                        }
+                        .disabled(!isNextEnabled)
                     }
-                    .disabled(!isNextEnabled)
                 }
+                .padding(.horizontal)
+                .padding(.bottom, 32)
             }
-            .padding()
+            .frame(width: geometry.size.width, height: geometry.size.height)
         }
     }
     
@@ -363,7 +382,7 @@ struct QuestionView: View {
 struct ResultsView: View {
     let questions: [QuizQuestion]
     let userAnswers: [Int: Any]
-    let restartQuiz: () -> Void
+    let onShare: () -> Void
     
     var correctCount: Int {
         var count = 0
@@ -388,65 +407,165 @@ struct ResultsView: View {
                     .padding(.bottom)
                 
                 ForEach(0..<questions.count, id: \.self) { index in
-                    let question = questions[index]
-                    let userAnswer = userAnswers[index]
-                    let isCorrect = userAnswer != nil && question.isCorrect(userAnswer: userAnswer!)
+                    QuizResultQuestionView(
+                        question: questions[index],
+                        userAnswer: userAnswers[index]
+                    )
+                }
+                
+                HStack {
+                    Spacer()
+                    Button(action: onShare) {
+                        Image(systemName: "paperplane.fill")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 40, height: 40)
+                            .foregroundColor(.blue)
+                            .padding(.trailing, 24)
+                            .padding(.bottom, 30)
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct QuizResultQuestionView: View {
+    let question: QuizQuestion
+    let userAnswer: Any?
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(question.question)
+                .font(.title3)
+                .fontWeight(.semibold)
+                .padding(.bottom, 4)
+            
+            switch question.type {
+            case .multipleChoice:
+                ForEach(question.options ?? [], id: \.self) { option in
+                    let isSelected = (userAnswer as? Set<String>)?.contains(option) ?? false
+                    let isCorrect = question.correctAnswers?.contains(option) ?? false
+                    let userCorrect = question.isCorrect(userAnswer: userAnswer as Any)
                     
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            Text("Question \(index + 1):")
-                                .font(.headline)
-                            
-                            Spacer()
-                            
+                    HStack {
+                        Text(option)
+                            .foregroundColor(.primary)
+                        Spacer()
+                        if isSelected {
                             Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                                .foregroundColor(isCorrect ? .green : .red)
-                                .font(.title2)
-                        }
-                        
-                        Text(question.question)
-                            .font(.body)
-                            .padding(.vertical, 5)
-                        
-                        if let userAnswer = userAnswer {
-                            Text("Your answer: \(question.formatUserAnswer(userAnswer))")
-                                .foregroundColor(isCorrect ? .green : .red)
-                        } else {
-                            Text("Your answer: No answer provided")
-                                .foregroundColor(.red)
-                        }
-                        
-                        if !isCorrect {
-                            Text("Correct answer: \(question.formatCorrectAnswer())")
-                                .foregroundColor(.green)
-                            
-                            if let explanation = question.explanation {
-                                Text("Explanation: \(explanation)")
-                                    .font(.subheadline)
-                                    .foregroundColor(.gray)
-                                    .padding(.top, 2)
-                            }
+                        } else if isCorrect {
+                            Image(systemName: "checkmark.circle")
                         }
                     }
                     .padding()
                     .background(Color(UIColor.systemGray6))
-                    .cornerRadius(10)
-                    .padding(.horizontal)
+                    .cornerRadius(25)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 25)
+                            .stroke(
+                                userCorrect
+                                    ? (isSelected && isCorrect ? Color.green : Color.clear)
+                                    : (isSelected && !isCorrect ? Color.red : (isCorrect ? Color.green : Color.clear)),
+                                lineWidth: 3
+                            )
+                    )
                 }
-                
-                Button(action: restartQuiz) {
-                    Text("Restart Quiz")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(10)
+            case .trueFalse:
+                ForEach(["True", "False"], id: \.self) { option in
+                    let isSelected = (userAnswer as? Set<String>)?.contains(option) ?? false
+                    let isCorrect = (question.correctAnswer as? Bool) == (option == "True")
+                    let userCorrect = question.isCorrect(userAnswer: userAnswer as Any)
+                    
+                    HStack {
+                        Text(option)
+                            .foregroundColor(.primary)
+                        Spacer()
+                        if isSelected {
+                            Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        } else if isCorrect {
+                            Image(systemName: "checkmark.circle")
+                        }
+                    }
+                    .padding()
+                    .background(Color(UIColor.systemGray6))
+                    .cornerRadius(25)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 25)
+                            .stroke(
+                                userCorrect
+                                    ? (isSelected && isCorrect ? Color.green : Color.clear)
+                                    : (isSelected && !isCorrect ? Color.red : (isCorrect ? Color.green : Color.clear)),
+                                lineWidth: 3
+                            )
+                    )
                 }
-                .padding(.horizontal)
-                .padding(.bottom, 30)
+            case .fillInBlank:
+                let userText = (userAnswer as? String) ?? ""
+                let correctText = (question.correctAnswer as? String) ?? ""
+                let isCorrect = question.isCorrect(userAnswer: userAnswer as Any)
+                HStack {
+                    Text("Your answer: \(userText)")
+                        .foregroundColor(isCorrect ? .green : .red)
+                    Spacer()
+                    if isCorrect {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                    } else {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.red)
+                    }
+                }
+                .padding()
+                .background(Color(UIColor.systemGray6))
+                .cornerRadius(25)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 25)
+                        .stroke(isCorrect ? Color.green : Color.red, lineWidth: 3)
+                )
+                if !isCorrect {
+                    Text("Correct answer: \(correctText)")
+                        .foregroundColor(.green)
+                }
+            }
+            if let explanation = question.explanation {
+                FoldableDescription(text: explanation)
             }
         }
+        .padding()
+        .background(Color(UIColor.systemGray5))
+        .cornerRadius(15)
+        .padding(.horizontal)
+    }
+}
+
+struct FoldableDescription: View {
+    let text: String
+    @State private var isExpanded = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Button(action: {
+                withAnimation { isExpanded.toggle() }
+            }) {
+                HStack {
+                    Text("Description")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                        .font(.subheadline)
+                    Spacer()
+                }
+            }
+            if isExpanded {
+                Text(text)
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .padding(.top, 2)
+                    .transition(.opacity)
+            }
+        }
+        .padding(.top, 4)
     }
 }
 
@@ -473,7 +592,7 @@ struct MultipleChoiceView: View {
                     }
                     .padding()
                     .background(Color(UIColor.systemGray6))
-                    .cornerRadius(10)
+                    .cornerRadius(25)
                 }
             }
         }
@@ -498,7 +617,7 @@ struct TrueFalseView: View {
                 }
                 .padding()
                 .background(Color(UIColor.systemGray6))
-                .cornerRadius(10)
+                .cornerRadius(25)
             }
             
             Button(action: {
@@ -513,7 +632,7 @@ struct TrueFalseView: View {
                 }
                 .padding()
                 .background(Color(UIColor.systemGray6))
-                .cornerRadius(10)
+                .cornerRadius(25)
             }
         }
         .padding(.horizontal)
@@ -560,6 +679,7 @@ struct FillInBlankView: View {
         }
     }
 }
+
 
 #Preview {
     QuizView()
