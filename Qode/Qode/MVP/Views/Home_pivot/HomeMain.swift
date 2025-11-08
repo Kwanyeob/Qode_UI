@@ -15,22 +15,25 @@ enum subTitleType {
 
 struct HomeMain: View {
     var body: some View {
-        ScrollView{
-            VStack(spacing: 20){
-                HomeHeaderView()
-                WeeklyStreakView()
-                MiniStatView()
-                UpNextView()
-                WeeklyRecommendView()
-            }.padding(.horizontal)
-        // find out a better color. It is too gray. Make it more whiter.
-        }.background(Color(.systemGray6))
-        TabView{
-            HomeMenuView(label:"Home", image:"house")
-            HomeMenuView(label:"Roadmap", image:"map")
-            HomeMenuView(label:"Stats", image:"align.vertical.bottom.fill")
-            HomeMenuView(label:"Profile", image:"person.crop.circle")
-        }.frame(height: 45)
+        NavigationStack {
+            ScrollView{
+                VStack(spacing: 20){
+                    HomeHeaderView()
+                    WeeklyStreakView()
+                    MiniStatView()
+                    UpNextView()
+                    WeeklyRecommendView()
+                }.padding(.horizontal)
+                // find out a better color. It is too gray. Make it more whiter.
+            }.background(Color(.systemGray6))
+                .navigationBarBackButtonHidden(true)
+            TabView{
+                HomeMenuView(label:"Home", image:"home_icon")
+                HomeMenuView(label:"Roadmap", image:"roadmap_icon")
+                HomeMenuView(label:"Stats", image:"stat_icon")
+                HomeMenuView(label:"Profile", image:"profile_icon")
+            }.frame(height: 45)
+        }
     }
 }
 
@@ -116,11 +119,11 @@ struct MiniStatView: View {
     var body: some View {
         ScrollView(.horizontal,showsIndicators: false){
             HStack{
-                MiniStatCardView(unit: "DAYS", time: "24", numberSolved: "", title: "Log In Streak", subTitleType: .time)
-                MiniStatCardView(unit: "WEEKS", time: "3", numberSolved: "", title: "Roadmap Progress", subTitleType: .time)
-                MiniStatCardView(unit: "QUIZZES", time: "", numberSolved: "15", title: "# of CS Quizzes Solved", subTitleType: .solved)
-                MiniStatCardView(unit: "solved", time: "", numberSolved: "21", title: "# of Algorithm Solved", subTitleType: .solved)
-                MiniStatCardView(unit: "DAYS", time: "5", numberSolved: "", title: "Average Roadmap\rcompletion Time", subTitleType: .time)
+                MiniStatCardView(unit: "DAYS", time: "24", numberSolved: "", title: "Log In Streak", subTitleType: .time, image:"algo_progress_icon")
+                MiniStatCardView(unit: "WEEKS", time: "3", numberSolved: "", title: "Roadmap Progress", subTitleType: .time, image:"roadmap_progress_icon")
+                MiniStatCardView(unit: "QUIZZES", time: "", numberSolved: "15", title: "# of CS Quizzes Solved", subTitleType: .solved, image:"quiz_progress_icon")
+                MiniStatCardView(unit: "solved", time: "", numberSolved: "21", title: "# of Algorithm Solved", subTitleType: .solved, image:"algo_progress_icon")
+                MiniStatCardView(unit: "DAYS", time: "5", numberSolved: "", title: "Average Roadmap\rcompletion Time", subTitleType: .time, image:"time_progress_icon")
             }.frame(maxWidth: .infinity, alignment: .leading)
             
         }
@@ -133,6 +136,7 @@ struct MiniStatCardView: View {
     let numberSolved : String
     let title : String // Log In Streak
     let subTitleType : subTitleType
+    let image: String
 
     
     var body: some View {
@@ -147,6 +151,8 @@ struct MiniStatCardView: View {
                     .font(.footnote)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .foregroundColor(.orange)
+                Image(image)
+                    .renderingMode(.template)
                 var subTitle: String {
                     if subTitleType == .solved {
                         return numberSolved + " " + unit
@@ -176,6 +182,11 @@ struct UpNextView : View {
                 Rectangle()
                     .fill(Color.white)
                     .frame(width: .infinity, height: 150)
+                Image("illust_test")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 150)
+                    .frame(maxWidth: .infinity)
                 // add "Complete your js quiz
                 // estimateed time 10 min
                 // think about how this caption can be added dynamically.
@@ -201,6 +212,11 @@ struct WeeklyRecommendView : View {
                 Rectangle()
                     .fill(Color.white)
                     .frame(width: .infinity, height: 150)
+                Image("illust_test")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 150)
+                    .frame(maxWidth: .infinity)
                 // add "Complete your js quiz
                 // estimateed time 10 min
                 // think about how this caption can be added dynamically.
@@ -209,6 +225,11 @@ struct WeeklyRecommendView : View {
                 Rectangle()
                     .fill(Color.white)
                     .frame(width: .infinity, height: 150)
+                Image("illust_test")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 150)
+                    .frame(maxWidth: .infinity)
                 // add "Complete your js quiz
                 // estimateed time 10 min
                 // think about how this caption can be added dynamically.
@@ -222,7 +243,13 @@ struct HomeMenuView : View {
     let image : String
     var body: some View {
         Text("")
-            .tabItem { Label(label, systemImage: image) }
+            .tabItem {
+                    VStack {
+                        Image(image)
+                            .renderingMode(.template)
+                        Text(label)
+                    }
+                }
     }
 }
 
