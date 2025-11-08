@@ -10,13 +10,15 @@ import SwiftUI
 
 struct LanguageQView: View {
     var body: some View {
-        ScrollView{
-            VStack{
-                LanguageHeaderView()
-                Spacer()
-                LanguageCardView()
-                Spacer()
-                LanguageButtonView()
+        NavigationStack {
+            ScrollView{
+                VStack{
+                    LanguageHeaderView()
+                    Spacer()
+                    LanguageCardView()
+                    Spacer()
+                    LanguageButtonView()
+                }.navigationBarBackButtonHidden(true)
             }
         }
     }
@@ -113,31 +115,31 @@ struct LanguageCustomRowView: View {
 
 
 struct LanguageButtonView: View {
+    @Environment(\.dismiss) var dismiss
     var body: some View {
         HStack(spacing:100){
-            Button("Back",action:
-                    {
-                print("hello")
-            }).frame(maxWidth: .infinity)
-                .padding()
-                .foregroundColor(.black)
-                .background(RoundedRectangle(cornerRadius:12)
-                    .fill(Color.white)
-                    .overlay(RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.black, lineWidth: 1)
-                ))
-            
-            Button("Next",action:
-                    {
-                print("hello")
-            }).frame(maxWidth: .infinity)
-                .padding()
-                .foregroundColor(.black)
-                .background(RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.blue)
-                    .overlay(RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.black, lineWidth: 1)
-                ))
+            Button(action: {
+                dismiss()
+            }) {
+                Text("Back").frame(maxWidth: .infinity)
+                    .padding()
+                    .foregroundColor(.black)
+                    .background(RoundedRectangle(cornerRadius:12)
+                        .fill(Color.white)
+                        .overlay(RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.black, lineWidth: 1)
+                        ))
+            }
+            NavigationLink(destination: CustomQView()) {
+                Text("Next").frame(maxWidth: .infinity)
+                    .padding()
+                    .foregroundColor(.black)
+                    .background(RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.blue)
+                        .overlay(RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.black, lineWidth: 1)
+                        ))
+            }
         }.padding()
         
             

@@ -9,14 +9,17 @@ import SwiftUI
 
 
 struct RoleQView: View {
+    
     var body: some View {
-        ScrollView{
-            VStack{
-                RoleHeaderView()
-                Spacer()
-                RoleCardView()
-                Spacer()
-                RoleButtonView()
+        NavigationStack {
+            ScrollView{
+                VStack{
+                    RoleHeaderView()
+                    Spacer()
+                    RoleCardView()
+                    Spacer()
+                    RoleButtonView()
+                }.navigationBarBackButtonHidden(true)
             }
         }
     }
@@ -122,33 +125,34 @@ struct CustomRoleRowView: View {
 
 
 struct RoleButtonView: View {
+    @Environment(\.dismiss) var dismiss
     var body: some View {
         HStack(spacing:100){
-            Button("Back",action:
-                    {
-                print("hello")
-            }).frame(maxWidth: .infinity)
-                .padding()
-                .foregroundColor(.black)
-                .background(RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.blue)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.black, lineWidth: 1)
-                    ))
+            Button(action: {
+                dismiss()
+            }) {
+                Text("Back").frame(maxWidth: .infinity)
+                    .padding()
+                    .foregroundColor(.black)
+                    .background(RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.blue)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.black, lineWidth: 1)
+                        ))
+            }
             
-            Button("Next",action:
-                    {
-                print("hello")
-            }).frame(maxWidth: .infinity)
-                .padding()
-                .foregroundColor(.black)
-                .background(RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.blue)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.black, lineWidth: 1)
-                    ))
+            NavigationLink(destination: LanguageQView()) {
+                Text("Next").frame(maxWidth: .infinity)
+                    .padding()
+                    .foregroundColor(.black)
+                    .background(RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.blue)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.black, lineWidth: 1)
+                        ))
+            }
         }.padding()
         
             

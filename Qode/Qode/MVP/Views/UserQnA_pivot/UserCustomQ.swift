@@ -11,12 +11,14 @@ import SwiftUI
 
 struct CustomQView: View {
     var body: some View {
-        VStack{
-            CustomHeaderView()
-            Spacer()
-            CustomCardView()
-            Spacer()
-            CustomButtonView()
+        NavigationStack {
+            VStack{
+                CustomHeaderView()
+                Spacer()
+                CustomCardView()
+                Spacer()
+                CustomButtonView()
+            }
         }
     }
 }
@@ -119,34 +121,35 @@ struct CustomRowView: View {
 
 
 struct CustomButtonView: View {
+    @Environment(\.dismiss) var dismiss
     var body: some View {
         HStack(spacing:100){
-            Button("Back",action:
-                    {
-                print("hello")
-            }).frame(maxWidth: .infinity)
-                .padding()
-                .foregroundColor(.black)
-                .background(RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.blue)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.black, lineWidth: 1)
-                    ))
-            
-            Button("Next",action:
-                    {
-                print("hello")
-            }).frame(maxWidth: .infinity)
-                .padding()
-                .foregroundColor(.black)
-                .background(RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.blue)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.black, lineWidth: 1)
-                    ))
+            Button(action: {
+                dismiss()
+            }) {
+                Text("Back").frame(maxWidth: .infinity)
+                    .padding()
+                    .foregroundColor(.black)
+                    .background(RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.blue)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.black, lineWidth: 1)
+                        ))
+            }
+            NavigationLink(destination: HomeMain()) {
+                Text("Next").frame(maxWidth: .infinity)
+                    .padding()
+                    .foregroundColor(.black)
+                    .background(RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.blue)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.black, lineWidth: 1)
+                        ))
+            }
         }.padding()
+            .navigationBarBackButtonHidden(true)
         
             
     }
