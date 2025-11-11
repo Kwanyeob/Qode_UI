@@ -152,7 +152,8 @@ struct MiniStatCardView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .foregroundColor(.orange)
                 Image(image)
-                    .renderingMode(.template)
+                    .renderingMode(.original)
+                    .frame(alignment: .center)
                 var subTitle: String {
                     if subTitleType == .solved {
                         return numberSolved + " " + unit
@@ -182,11 +183,15 @@ struct UpNextView : View {
                 Rectangle()
                     .fill(Color.white)
                     .frame(width: .infinity, height: 150)
-                Image("illust_test")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 150)
-                    .frame(maxWidth: .infinity)
+                GeometryReader { geometry in
+                    Image("illust_upnext")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(height: geometry.size.width * 0.4)
+                        .frame(maxWidth: .infinity)
+                        .clipped()
+                }
+                .frame(height: UIScreen.main.bounds.width * 0.4)
                 // add "Complete your js quiz
                 // estimateed time 10 min
                 // think about how this caption can be added dynamically.
@@ -212,11 +217,15 @@ struct WeeklyRecommendView : View {
                 Rectangle()
                     .fill(Color.white)
                     .frame(width: .infinity, height: 150)
-                Image("illust_test")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 150)
-                    .frame(maxWidth: .infinity)
+                GeometryReader { geometry in
+                    Image("illust_weeklyreco")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(height: geometry.size.width * 0.4)
+                        .frame(maxWidth: .infinity)
+                        .clipped()
+                }
+                .frame(height: UIScreen.main.bounds.width * 0.4)
                 // add "Complete your js quiz
                 // estimateed time 10 min
                 // think about how this caption can be added dynamically.
@@ -225,11 +234,15 @@ struct WeeklyRecommendView : View {
                 Rectangle()
                     .fill(Color.white)
                     .frame(width: .infinity, height: 150)
-                Image("illust_test")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 150)
-                    .frame(maxWidth: .infinity)
+                GeometryReader { geometry in
+                    Image("illust_upnext")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(height: geometry.size.width * 0.4)
+                        .frame(maxWidth: .infinity)
+                        .clipped()
+                }
+                .frame(height: UIScreen.main.bounds.width * 0.4)
                 // add "Complete your js quiz
                 // estimateed time 10 min
                 // think about how this caption can be added dynamically.
