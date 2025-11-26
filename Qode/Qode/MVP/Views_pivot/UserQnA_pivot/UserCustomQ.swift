@@ -137,7 +137,7 @@ struct CustomButtonView: View {
                                 .stroke(Color.black, lineWidth: 1)
                         ))
             }
-            NavigationLink(destination: HomeMain()) {
+            NavigationLink(destination: RingAnimation()) {
                 Text("Next").frame(maxWidth: .infinity)
                     .padding()
                     .foregroundColor(.black)
